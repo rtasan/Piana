@@ -32,20 +32,21 @@ Before you download the addon, you must download these first.
 
 
 ## 🔧 Installation & Usage
-- **[Click here to download the latest version of the addon](https://github.com/luvyana/Piana/releases/latest)**
-- Open Blender, go to Edit > Preferences > find Piana > Enable it
-- Inside Piana's UI, go to Settings
+1. **[Click here to download the latest version of the addon](https://github.com/luvyana/Piana/releases/latest)**
+2. Open Blender, go to Edit > Preferences > find Piana > Enable it
+3. Inside Piana's UI, go to Settings and fill the inputs as follows.
    ```js
    Export Folder    = "Path to save your settings & export the maps"
                     // Pick an empty folder with a lot of space.
    PAKs Folder      = "Path to VALORANT's PAK files."
                     // ..Riot Games\VALORANT\live\ShooterGame\Content\Paks\
    ```
-- **Before you do anything make sure to open console by going *"Window > Toggle System Console"***
+   
+4. **Before you do anything make sure to open console by going *"Window > Toggle System Console"***
 
-- Now you can import maps however you want.
+5. If you correctly selected the paths, **"Map Importer"** panel will be revealed. There you can select the map and import it :)
 
-- **Debug Mode** : It will disable the save features, and also export some useful .json files.
+- **Debug Mode** : It will disable the save features, and also export some useful .json files. (Not Recommended)
 - **Use PerfPatch** : It'll inject [BlenderPerfPatch](https://wiki.modme.co/wiki/apps/Blender-Perf-Patch.html) to boost the import speed.
 
 
