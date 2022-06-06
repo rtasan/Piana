@@ -660,6 +660,10 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
                 if "AO Color" in N_SHADER.inputs:
                     N_SHADER.inputs["AO Color"].default_value = get_rgb(param_value)
 
+            if "lightmass-only vertex color" in param_name:
+                if "VC" in N_SHADER.inputs:
+                    N_SHADER.inputs["VC"].default_value = get_rgb(param_value)
+
             if "emissive mult" in param_name:
                 if "Emissive Mult" in N_SHADER.inputs:
                     N_SHADER.inputs["Emissive Mult"].default_value = get_rgb(param_value)
