@@ -1,0 +1,38 @@
+name: Piana Build & Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      pianaVersion:
+        description: Piana version
+        required: true
+        default: '1.x.x'
+
+jobs:
+  release-content:
+    runs-on: ubuntu-latest
+
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Python Setup
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.10'
+
+      - name: Package Piana
+        run: python make_release.py ${{ github.event.inputs.pianaVersion }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ./Piana-${{ github.event.inputs.pianaVersion }}.zip
+          tag_name: ${{ github.event.inputs.pianaVersion }}
+          name: Piana ${{ github.event.inputs.pianaVersion }}
+          prerelease: false

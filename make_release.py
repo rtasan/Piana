@@ -7,7 +7,7 @@ import sys
 
 
 addon_name = "Piana"
-addon_version = "v1.0.0"
+addon_version = sys.argv[1]
 addon_filename = addon_name + "-" + addon_version
 
 
@@ -28,7 +28,6 @@ def main():
     cwd = Path(os.getcwd())
     build_folder = Path(os.path.join(os.path.dirname(__file__), addon_name))
     src_folder = Path(os.path.join(os.path.dirname(__file__), "src"))
-    
 
     # TODO : Make this work in Github Actions
     # Build cue4extractor
@@ -50,8 +49,8 @@ def main():
     #     "-p:FileVersion=4.0.2.0"
     # ])
 
-    [p.unlink() for p in pathlib.Path('.').rglob('*.py[co]')]
-    [p.rmdir() for p in pathlib.Path('.').rglob('__pycache__')]
+    [p.unlink() for p in pathlib.Path(".").rglob("*.py[co]")]
+    [p.rmdir() for p in pathlib.Path(".").rglob("__pycache__")]
 
     if not build_folder.exists():
         build_folder.mkdir(parents=True)
