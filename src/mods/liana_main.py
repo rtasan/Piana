@@ -51,7 +51,8 @@ BLACKLIST = [
     "SM_Port_Snowflakes_BoundMesh",
     "sm_barrierduality",
     "box_for_volumes",
-    # "lightBlocker2"
+    "SuperGrid",
+    "_Col"
 ]
 
 COUNT = 0
@@ -387,6 +388,7 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
 
     N_SHADER = nodes.new("ShaderNodeGroup")
     N_SHADER.width = 200
+    N_SHADER_M = None
 
     # Pre Overrides
 
@@ -449,9 +451,13 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
         "BaseOpacity_RGB_Env_MAT"
     ]
 
+    types_lightshift = [
+        "0_GeoLightShaft"
+    ]
+
     MaterialTypes.append(mat_type)
 
-    nodes_textures = get_textures(settings=settings, mat=mat, override=override, mat_props=mat_props)
+    #nodes_textures = get_textures(settings=settings, mat=mat, override=override, mat_props=mat_props, shader=N_SHADER) MOVED DOWN
 
     blend_mode = BlendMode.OPAQUE
 
@@ -465,9 +471,18 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
     if mat_type in types_decal:
         N_SHADER.node_tree = get_valorant_shader(group_name="VALORANT_Decal")
         link(N_SHADER.outputs["BSDF"], N_OUTPUT.inputs["Surface"])
+
     elif mat_type in types_hologram:
         N_SHADER.node_tree = get_valorant_shader(group_name="VALORANT_Hologram")
         link(N_SHADER.outputs["Emission"], N_OUTPUT.inputs["Surface"])
+
+    elif mat_type in types_lightshift:
+        N_SHADER.node_tree = get_valorant_shader(group_name="VALORANT_Lightshift")
+        link(N_SHADER.outputs["BSDF"], N_OUTPUT.inputs["Surface"])
+        N_SHADER_M = nodes.new("ShaderNodeGroup")
+        N_SHADER_M.width = 200
+        N_SHADER_M.node_tree = get_valorant_shader(group_name="VALORANT_W/V_Mapping")
+        set_node_position(N_SHADER_M, -1600, 0)
 
     elif mat_type in types_screen or "LCD" in mat.name or "Terminal" in mat.name:
         N_SHADER.node_tree = get_valorant_shader(group_name="VALORANT_Screen")
@@ -521,6 +536,7 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
         link(N_SHADER.outputs["BSDF"], N_OUTPUT.inputs["Surface"])
         return
 
+    nodes_textures = get_textures(settings=settings, mat=mat, override=override, mat_props=mat_props, shader=N_SHADER)
     # !SECTION
 
     if "BasePropertyOverrides" in mat_props:
@@ -626,6 +642,23 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
 
             if "metallic" in param_name and "Metallic Strength" in N_SHADER.inputs:
                 N_SHADER.inputs["Metallic Strength"].default_value = param["ParameterValue"]
+
+            if "emissive_base_power" in param_name and "Emissive_Base_Power" in N_SHADER.inputs:
+                N_SHADER.inputs["Emissive_Base_Power"].default_value = param["ParameterValue"]
+
+            if "alpha_colormult" in param_name and "Alpha_ColorMult" in N_SHADER.inputs:
+                N_SHADER.inputs["Alpha_ColorMult"].default_value = param["ParameterValue"]
+
+            if "alpha_base_power" in param_name and "Alpha_Base_Power" in N_SHADER.inputs:
+                N_SHADER.inputs["Alpha_Base_Power"].default_value = param["ParameterValue"]
+
+            if N_SHADER_M:
+                if "alpha_offsetv" in param_name and "Offset V" in N_SHADER_M.inputs:
+                    N_SHADER_M.inputs["Offset V"].default_value = param["ParameterValue"]
+
+            if N_SHADER_M:
+                if "alpha_scalev" in param_name and "Size V" in N_SHADER_M.inputs:
+                    N_SHADER_M.inputs["Size V"].default_value = param["ParameterValue"]
 
             # if "roughness mult" in param_name and "Roughness Strength" in N_SHADER.inputs:
             #     # print(param_name, param["ParameterValue"] * 0.1)
@@ -770,6 +803,18 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
         if key == "normal b" and "NM B" in N_SHADER.inputs:
             link(node_tex.outputs["Color"], N_SHADER.inputs["NM B"])
 
+        if key == "emissive_base":
+            if "LS_Color" in N_SHADER.inputs:
+                link(node_tex.outputs["Color"], N_SHADER.inputs["LS_Color"])
+
+        if key == "alpha_base":
+            if "LS_Alpha" in N_SHADER.inputs:
+                link(node_tex.outputs["Color"], N_SHADER.inputs["LS_Alpha"])
+                node_tex.extension = "EXTEND"
+                N_SHADER.inputs["Cache Switch"].default_value = 1
+                if N_SHADER_M:
+                    link(N_SHADER_M.outputs["Mapping"], node_tex.inputs["Vector"])
+
         # if key == "mask" or key == "rgba":
         #     pass
             # if decal:
@@ -849,7 +894,7 @@ def get_image(tex_name, tex_local_path):
     return img
 
 
-def get_textures(settings: Settings, mat: bpy.types.Material, override: bool, mat_props: dict):
+def get_textures(settings: Settings, mat: bpy.types.Material, override: bool, mat_props: dict , shader):
     blacklist_tex = [
         "Albedo_DF",
         "MRA_MRA",
@@ -938,6 +983,10 @@ def get_textures(settings: Settings, mat: bpy.types.Material, override: bool, ma
                         tex_image_node.image.alpha_mode = "CHANNEL_PACKED"
                         tex_image_node.label = texture_name_raw
                         tex_image_node.location = [pos[0], pos[1]]
+                        if texture_name_raw == "GradientVertB_TEX":
+                            if "Gradient_Cache" in shader.inputs:
+                                mat.node_tree.links.new(tex_image_node.outputs["Color"], shader.inputs["Gradient_Cache"])
+                                tex_image_node.extension = "EXTEND"
 
                         # print(tex_image_node)
 

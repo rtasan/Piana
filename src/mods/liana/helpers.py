@@ -206,7 +206,9 @@ class Settings:
             "VALORANT_Decal",
             "VALORANT_MRA_Splitter",
             "VALORANT_Normal_Fix",
-            "VALORANT_Screen"
+            "VALORANT_Screen",
+            "VALORANT_Lightshift",
+            "VALORANT_W/V_Mapping"
         ]
 
         create_folders(self)
