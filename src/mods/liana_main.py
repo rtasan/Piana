@@ -33,7 +33,7 @@ SELECTIVE_UMAP = [
     # "Ascent_Art_Def",
     # "Ascent_Art_DefPathA",
     # "Ascent_Art_DefPathB",
-    "Ascent_Art_Env_VFX",
+    # "Ascent_Art_Env_VFX",
     # "Ascent_Art_Mid",
     # "Ascent_Art_Vista",
     # "Ascent_Art_VistaA",
