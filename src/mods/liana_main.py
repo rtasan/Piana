@@ -413,8 +413,7 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
         "TileScroll_Mat",
         "BasaltEnv_MAT",
         "BaseEnvEmissive_MAT",
-        "BaseEnv_Unlit_MAT_V4",
-        "0_Waterfall_Base1"
+        "BaseEnv_Unlit_MAT_V4"
     ]
 
     types_blend = [
