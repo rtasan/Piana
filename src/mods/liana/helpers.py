@@ -208,7 +208,10 @@ class Settings:
             "VALORANT_Normal_Fix",
             "VALORANT_Screen",
             "VALORANT_Lightshift",
-            "VALORANT_W/V_Mapping"
+            "VALORANT_W/V_Mapping",
+            "VALORANT_SpriteGlow",
+            "VALORANT_Waterfall",
+            "VALORANT_Waterfall_Mapping"
         ]
 
         create_folders(self)
