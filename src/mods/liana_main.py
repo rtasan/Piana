@@ -478,6 +478,7 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
     # SECTION : Select Shader
 
     user_mat_type = mat_type
+        
     if mat_type in types_decal:
         N_SHADER.node_tree = get_valorant_shader(group_name="VALORANT_Decal")
         link(N_SHADER.outputs["BSDF"], N_OUTPUT.inputs["Surface"])
@@ -548,6 +549,10 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
         N_MAPPING.node_tree = get_valorant_shader(group_name="VALORANT_Waterfall_Mapping")
         set_node_position(N_MAPPING, -1600, 0)
         user_mat_type = "Waterfallvista"
+    
+    elif mat_type == "NO PARENT":
+        N_SHADER.node_tree = get_valorant_shader(group_name="VALORANT_Base")
+        link(N_SHADER.outputs["BSDF"], N_OUTPUT.inputs["Surface"])
 
     elif mat_type in types_base:
         N_SHADER.node_tree = get_valorant_shader(group_name="VALORANT_Base")
@@ -1047,6 +1052,42 @@ def get_textures(settings: Settings, mat: bpy.types.Material, override: bool, ma
                             nodes_texture[texture_name_raw] = tex_image_node
 
                         TextureParameterValues.append(texture_name_raw.lower())
+
+    elif "CachedExpressionData"in mat_props:
+        pos = [-1300, 0]
+        i = 0
+        textures = mat_props["CachedExpressionData"]["ReferencedTextures"] 
+        for index, param, in enumerate(textures):
+            if param is not None:
+
+                texture_name_raw = param["ObjectName"].replace("Texture2D ", "")
+                if texture_name_raw not in blacklist_tex:
+                    texture_path_raw = param["ObjectPath"]
+
+                    tex_game_path = get_texture_path_yo(s=texture_path_raw, f=settings.texture_format)
+                    tex_local_path = settings.assets_path.joinpath(tex_game_path).__str__()
+
+                    if Path(tex_local_path).exists():
+                        pos[1] = i * -270
+                        i += 1
+                        tex_image_node = mat.node_tree.nodes.new('ShaderNodeTexImage')
+                        tex_image_node.image = get_image(Path(tex_local_path).stem, tex_local_path)
+                        tex_image_node.image.alpha_mode = "CHANNEL_PACKED"
+                        tex_image_node.label = texture_name_raw
+                        tex_image_node.location = [pos[0], pos[1]]
+
+                        if "_DF" in texture_name_raw:
+                            if "DF" in shader.inputs:
+                                mat.node_tree.links.new(tex_image_node.outputs["Color"], shader.inputs["DF"])
+
+                        if "_NM" in texture_name_raw:
+                            if "NM" in shader.inputs:
+                                mat.node_tree.links.new(tex_image_node.outputs["Color"], shader.inputs["NM"])
+
+                        if "_MRA" in texture_name_raw:
+                            if "MRA" in shader.inputs:
+                                mat.node_tree.links.new(tex_image_node.outputs["Color"], shader.inputs["MRA"])
+
 
     return nodes_texture
 # !SECTION
