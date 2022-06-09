@@ -9,14 +9,11 @@
 
   <p align="center">
     <br />
-    <a href="https://discord.gg/ianas">Join our Discord Server</a>
-    ·
-    <a href="https://github.com/luvyana/Piana/issues">Request Feature & Report a Bug</a>
+    <img alt="GitHub release (latest by date)" src="https://img.shields.io/github/v/release/luvyana/Piana?color=green&style=for-the-badge">
+    <img alt="GitHub All Releases" src="https://img.shields.io/github/downloads/luvyana/Piana/total?color=green&style=for-the-badge">
+    <img alt="GitHub All Releases" src="https://img.shields.io/discord/436687524199661599?color=7289da&style=for-the-badge">
   </p>
 </div>
-
-
-
 
 # **Piana**
 Blender addon for creating VALORANT content.
