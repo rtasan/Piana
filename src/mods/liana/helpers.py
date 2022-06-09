@@ -211,7 +211,10 @@ class Settings:
             "VALORANT_W/V_Mapping",
             "VALORANT_SpriteGlow",
             "VALORANT_Waterfall",
-            "VALORANT_Waterfall_Mapping"
+            "VALORANT_Waterfall_Mapping",
+            "VALORANT_Ventsmoke",
+            "VALORANT_Ventsmoke_Mapping",
+            "VALORANT_Skybox"
         ]
 
         create_folders(self)

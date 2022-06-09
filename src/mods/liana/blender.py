@@ -7,7 +7,6 @@ from ...utils.common import setup_logger
 logger = setup_logger(__name__)
 
 def clean_scene(debug: bool = False):
-
     for block in bpy.data.meshes:
         bpy.data.meshes.remove(block)
 
@@ -24,7 +23,7 @@ def clean_scene(debug: bool = False):
         bpy.data.images.remove(block)
 
     for block in bpy.data.images:
-        if ".hdr" not in block.name:
+        if ".hdr" not in block.name and "Skies" not in block.name:
             bpy.data.images.remove(block)
         
     for block in bpy.data.lights:
