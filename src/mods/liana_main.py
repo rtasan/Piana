@@ -1150,7 +1150,7 @@ def get_textures(settings: Settings, mat: bpy.types.Material, override: bool, ma
                                     node_output.location = 200,0
 
                                     node_environment = world_nodes.new('ShaderNodeTexEnvironment')
-                                    node_environment.image = bpy.data.images.load("D:\Game Porting\Valorant\export\export\Game\Lighting\Textures\SkyDome\T_CGSkies_0091_ascent_DF.png")
+                                    node_environment.image = bpy.data.images.load(tex_local_path)
                                     node_environment.label = texture_name_raw
                                     node_environment.location = -300,0
                         
