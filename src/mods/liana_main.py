@@ -646,6 +646,26 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
                     if param["Value"]:
                         N_SHADER.inputs["Use MLB Color"].default_value = 1
 
+                if "blend tint only" in param_name and "Blend Tint Only" in N_SHADER.inputs:
+                    if param["Value"]:
+                        N_SHADER.inputs["Blend Tint Only"].default_value = 1
+
+                if "use 2 diffuse maps" in param_name and "Use 2 DF Maps" in N_SHADER.inputs:
+                    if param["Value"]:
+                        N_SHADER.inputs["Use 2 DF Maps"].default_value = 1
+                    else:
+                        N_SHADER.inputs["Use 2 DF Maps"].default_value = 0
+
+                if "use 2 normal maps" in param_name and "Use 2 NM Maps" in N_SHADER.inputs:
+                    if param["Value"]:
+                        N_SHADER.inputs["Use 2 NM Maps"].default_value = 1
+                    else:
+                        N_SHADER.inputs["Use 2 NM Maps"].default_value = 0
+
+                if "invert alpha (texture)" in param_name and "Invert Alpha" in N_SHADER.inputs:
+                    if param["Value"]:
+                        N_SHADER.inputs["Invert Alpha"].default_value = 1
+
                 if "use vertex color" in param_name:
                     if obj_data.vertex_colors:
                         mat_switches.append(param_name)
@@ -696,6 +716,9 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
 
             if "emissive_base_power" in param_name and "Emissive_Base_Power" in N_SHADER.inputs:
                 N_SHADER.inputs["Emissive_Base_Power"].default_value = param["ParameterValue"]
+
+            if "mask blend power" in param_name and "Vertex Blend" in N_SHADER.inputs:
+                N_SHADER.inputs["Vertex Blend"].default_value = param["ParameterValue"]
 
             if "disolve_u_scale" in param_name and "U" in N_MAPPING.inputs:
                 N_MAPPING.inputs["U"].default_value = param["ParameterValue"]
