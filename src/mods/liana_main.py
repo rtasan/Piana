@@ -52,7 +52,8 @@ BLACKLIST = [
     "sm_barrierduality",
     "box_for_volumes",
     "SuperGrid",
-    "_Col"
+    "_Col",
+    "For_Volumes"
 ]
 
 COUNT = 0
@@ -596,7 +597,6 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
                     pass
                 if "MSM_Unlit" in prop_value:
                     pass
-                # print(prop_value)
 
             # ANCHOR Blend Mode
             if "BlendMode" == prop_name:
@@ -628,19 +628,6 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
         if "StaticSwitchParameters" in mat_props["StaticParameters"]:
             for param in mat_props["StaticParameters"]["StaticSwitchParameters"]:
                 param_name = param["ParameterInfo"]["Name"].lower()
-
-                # if "use vertex" in param_name or "use 2" in param_name:
-                #     mat_switches.append(param_name)
-                #     pass
-                if "rotate" in param_name:
-                    # logger.warn("ROTATE")
-                    pass
-                    # mat_switches.append(param_name)
-                    # N_SHADER.inputs["Invert Alpha"].default_value = 1
-
-                if "invert alpha (texture)" in param_name and "Invert Alpha" in N_SHADER.inputs:
-                    mat_switches.append(param_name)
-                    N_SHADER.inputs["Invert Alpha"].default_value = 1
 
                 if "use min light brightness color" in param_name and "Use MLB Color" in N_SHADER.inputs:
                     if param["Value"]:
@@ -688,7 +675,6 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
                         N_SHADER.inputs["Use Alpha as Emissive"].default_value = 1
                     else:
                         pass
-                        # logger.warning("No input named 'Use Alpha as Emissive' found in shader '{}'".format(N_SHADER.name))
                 # LOGGING
                 StaticParameterValues.append(param['ParameterInfo']['Name'].lower())
 
@@ -778,6 +764,10 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
             if "diffusecolor" in param_name:
                 if "Diffuse Color" in N_SHADER.inputs:
                     N_SHADER.inputs["Diffuse Color"].default_value = get_rgb(param_value)
+
+            if "color mult" in param_name:
+                if "Tint" in N_SHADER.inputs:
+                    N_SHADER.inputs["Tint"].default_value = get_rgb(param_value)
 
             if "ao color" in param_name:
                 if "AO Color" in N_SHADER.inputs:
@@ -996,6 +986,7 @@ def get_textures(settings: Settings, mat: bpy.types.Material, override: bool, ma
         "Normal_NM",
         "Diffuse B Low",
         "Blank_M0_NM",
+        "Blank_M0_Flat_00_black_white_DF",
         "Blank_M0_Flat_00_black_white_NM",
         "flatnormal",
         "flatwhite",
@@ -1148,10 +1139,11 @@ def get_textures(settings: Settings, mat: bpy.types.Material, override: bool, ma
                                     shader.inputs["Roughness"].default_value = -1
                                     shader.inputs["AO Strength"].default_value = 0.15
 
-                            if "_DF" in texture_name_raw and "Edging_DF" not in texture_name_raw:
+                            if "_DF" in texture_name_raw and "Edging_DF" not in texture_name_raw and "Blank" not in texture_name_raw:
                                 if "DF" in shader.inputs:
                                     mat.node_tree.links.new(tex_image_node.outputs["Color"], shader.inputs["DF"])
                                     mat.node_tree.links.new(tex_image_node.outputs["Alpha"], shader.inputs["Alpha"])
+                                    mat.node_tree.links.new(tex_image_node.outputs["Alpha"], shader.inputs["DF Alpha"])
 
                             if "_NM" in texture_name_raw:
                                 if "NM" in shader.inputs:
