@@ -13,12 +13,13 @@
 
 from . import auto_load
 import bpy
+
 bl_info = {
     "name": "Piana",
     "author": "Luviana",
     "description": "Tools & Scripts for creating VALORANT Content Creation",
     "blender": (3, 00, 0),
-    "version": (1, 0, 5),
+    "version": (1, 0, 6),
     "location": "3D View > Tools",
     "warning": "",
     "category": "Import-Export",
@@ -26,7 +27,6 @@ bl_info = {
     "doc_url": "https://github.com/luvyana/Piana",
     "tracker_url": "https://discord.gg/ianas",
 }
-
 
 auto_load.init()
 
