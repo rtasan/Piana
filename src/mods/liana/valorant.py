@@ -15,9 +15,10 @@ def filter_umap(umap_data: dict) -> list:
     for obj in umap_data:
         object_types.append(obj["Type"])
         if obj["Type"].lower() in mesh_types:
-            if "StaticMesh" in obj["Properties"]:
-                if obj["Properties"]["StaticMesh"] is not None and "bVisible" not in obj["Properties"]:
-                    umap_filtered.append(obj)
+            if "Properties" in obj:
+                if "StaticMesh" in obj["Properties"]:
+                    if obj["Properties"]["StaticMesh"] is not None and "bVisible" not in obj["Properties"]:
+                        umap_filtered.append(obj)
         if obj["Type"].lower() in gen_types:
             umap_filtered.append(obj)
 
