@@ -24,6 +24,7 @@ object_types = []
 
 SELECTIVE_OBJECTS = []
 SELECTIVE_UMAP = [
+    # "Pitt_Art_VFX"
     # "Ascent_Art_A",
     # "Ascent_Art_APathMid",
     # "Ascent_Art_Atk",
@@ -47,13 +48,15 @@ BLACKLIST = [
     "navmesh",
     "_breakable",
     "_collision",
-    "WindStreaks_Plane",
-    "SM_Port_Snowflakes_BoundMesh",
+    "windstreaks_plane",
+    "sm_port_snowflakes_boundmesh",
     "sm_barrierduality",
+    "M_Pitt_Caustics_Box",
     "box_for_volumes",
-    "SuperGrid",
-    "_Col",
-    "For_Volumes"
+    "supergrid",
+    "_col",
+    "M_Pitt_Lamps_Glow",
+    "for_volumes",
 ]
 
 COUNT = 0
@@ -428,6 +431,7 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
         "BaseEnv_BlendNormalPan_MAT_V4",
         "BaseEnv_Blend_UV2_Masked_MAT_V4",
         "BlendEnv_MAT"
+        "MaskTintEnv_MAT"
     ]
 
     types_glass = [
@@ -461,7 +465,7 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
     ]
 
     types_spriteglow = [
-        "0_Sprite_GlowLight"
+        "0_Sprite_GlowLight",
     ]
 
     types_waterfallvista = [
@@ -568,6 +572,9 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
         set_node_position(N_MAPPING, -1600, 0)
     
     elif mat_type == "NO PARENT":
+        if "M_Pitt_Lamps_Glow" in mat.name:
+            N_SHADER.node_tree = get_valorant_shader(group_name="VALORANT_SpriteGlow")
+            link(N_SHADER.outputs["BSDF"], N_OUTPUT.inputs["Surface"])
         if "Sky" not in mat.name:
             N_SHADER.node_tree = get_valorant_shader(group_name="VALORANT_Base")
             link(N_SHADER.outputs["BSDF"], N_OUTPUT.inputs["Surface"])
@@ -600,6 +607,8 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
 
             # ANCHOR Blend Mode
             if "BlendMode" == prop_name:
+                if "Use Alpha" in N_SHADER.inputs:
+                    N_SHADER.inputs["Use Alpha"].default_value = 1
                 if "BLEND_Translucent" in prop_value:
                     blend_mode = BlendMode.BLEND
                 elif "BLEND_Masked" in prop_value:
@@ -648,6 +657,10 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
                         N_SHADER.inputs["Use 2 NM Maps"].default_value = 1
                     else:
                         N_SHADER.inputs["Use 2 NM Maps"].default_value = 0
+
+                if "use alpha power" in param_name and "Use Alpha Power" in N_SHADER.inputs:
+                    if param["Value"]:
+                        N_SHADER.inputs["Use Alpha Power"].default_value = 1
 
                 if "invert alpha (texture)" in param_name and "Invert Alpha" in N_SHADER.inputs:
                     if param["Value"]:
@@ -862,7 +875,7 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
                 #     if "Alpha" in N_SHADER.inputs and user_mat_type != "Glass":
                 #         link(node_tex.outputs["Alpha"], N_SHADER.inputs["Alpha"])
 
-        if key == "diffuse b":
+        if key == "diffuse b" or key == "texture b":
             if "DF B" in N_SHADER.inputs and "DF B Alpha" in N_SHADER.inputs:
                 link(node_tex.outputs["Color"], N_SHADER.inputs["DF B"])
                 link(node_tex.outputs["Alpha"], N_SHADER.inputs["DF B Alpha"])
@@ -961,6 +974,14 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
         N_SHADER.inputs["Only Glow"].default_value = 1
         N_SHADER.inputs["Emission Strength"].default_value = 15
 
+    if "Sand_" in mat.name or "SandBlend" in mat.name:
+        if "Sand_Blend" in N_SHADER.inputs:
+            N_SHADER.inputs["Sand_Blend"].default_value = 1
+
+    if "Blendable_M3_GravelGrassSat" in mat.name:
+        if "Sand_Blend" in N_SHADER.inputs:
+            N_SHADER.inputs["Sand_Blend"].default_value = 0.8
+
 def get_scalar_value(mat_props, s_param_name):
     if "ScalarParameterValues" in mat_props:
         for param in mat_props["ScalarParameterValues"]:
@@ -990,6 +1011,7 @@ def get_textures(settings: Settings, mat: bpy.types.Material, override: bool, ma
         "Blank_M0_Flat_00_black_white_NM",
         "flatnormal",
         "flatwhite",
+        "Basalt_0_M0_Edging_DF",
     ]
 
     nodes_texture = {}
@@ -1139,7 +1161,7 @@ def get_textures(settings: Settings, mat: bpy.types.Material, override: bool, ma
                                     shader.inputs["Roughness"].default_value = -1
                                     shader.inputs["AO Strength"].default_value = 0.15
 
-                            if "_DF" in texture_name_raw and "Edging_DF" not in texture_name_raw and "Blank" not in texture_name_raw:
+                            if "_DF" in texture_name_raw:
                                 if "DF" in shader.inputs:
                                     mat.node_tree.links.new(tex_image_node.outputs["Color"], shader.inputs["DF"])
                                     mat.node_tree.links.new(tex_image_node.outputs["Alpha"], shader.inputs["Alpha"])
@@ -1224,8 +1246,17 @@ def filter_objects(umap_DATA, lights: bool = False) -> list:
     # Check for blacklisted items
     for og_model in filtered_list:
         model_name_lower = get_object_name(data=og_model, mat=False).lower()
+        if "OverrideMaterials" in og_model["Properties"]:
+            if og_model["Properties"]["OverrideMaterials"][0]:
+                mat_name_lower = og_model["Properties"]["OverrideMaterials"][0]["ObjectName"]
+            else:
+                mat_name_lower = "none"
+        else:
+            mat_name_lower = "none"
 
         if is_blacklisted(model_name_lower):
+            continue
+        if is_blacklisted(mat_name_lower):
             continue
         else:
             new_list.append(og_model)

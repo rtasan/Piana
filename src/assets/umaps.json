@@ -159,6 +159,7 @@
         "Range_VFX"
     ],
     "pearl": [
+        "Pitt_Lighting",
         "Pitt_Gameplay.umap",
         "Pitt_Art_Vista.umap",
         "Pitt_Art_VFX.umap",
