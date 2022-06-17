@@ -53,6 +53,8 @@ namespace cue4extractor
                 "breeze" => "FoxTrot",
                 "fracture" => "Canyon",
                 "range" => "Poveglia",
+                "pearl" => "Pitt",
+                "character select" => "PregameV2",
                 _ => "",
             };
 

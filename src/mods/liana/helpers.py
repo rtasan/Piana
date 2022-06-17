@@ -159,8 +159,10 @@ class BlendMode(Enum):
 
 
 def get_umap_list() -> list:
-    a = requests.get("https://gist.githubusercontent.com/luvyana/d5d7b2be0d33f9d213067f06ec681bd8/raw/cd34145908eb2e936065d10f3b9b570c7d5c7353/umaps.json").json()
-    return a
+    script_path = os.path.dirname(os.path.abspath(__file__))
+    umap_list_path = Path(script_path).joinpath("assets").joinpath("umaps.json")
+    umap_list = read_json(umap_list_path)
+    return umap_list
 
 
 

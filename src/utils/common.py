@@ -1,5 +1,5 @@
 import logging
-
+import json
 
 def setup_logger(name: str) -> logging.Logger:
     """
@@ -32,3 +32,12 @@ def setup_logger(name: str) -> logging.Logger:
         logger.addHandler(ch)
 
         return logger
+
+def read_json(p: str) -> dict:
+    """
+    Read a json file and return a dictionary
+    :param p: path to file
+    :return:
+    """
+    with open(p) as json_file:
+        return json.load(json_file)

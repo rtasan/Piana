@@ -1,23 +1,25 @@
 from bpy.types import AddonPreferences
-from .utils.common import setup_logger
+from .utils.common import setup_logger, read_json
 from .ui.funcs import has_paks
 
 
 import bpy
 import os
-import requests
+from pathlib import Path
 
 logger = setup_logger(__name__)
 
 
 def get_map_list():
-    maps_data = requests.get(
-        "https://gist.githubusercontent.com/luvyana/d5d7b2be0d33f9d213067f06ec681bd8/raw/cd34145908eb2e936065d10f3b9b570c7d5c7353/umaps.json").json()
+
+    script_path = os.path.dirname(os.path.abspath(__file__))
+    umap_list_path = Path(script_path).joinpath("assets").joinpath("umaps.json")
+    umap_list = read_json(umap_list_path)
 
     maps: list = []
     name: str
     n: int = 0
-    for name, value in maps_data.items():
+    for name, value in umap_list.items():
         maps.append(
             (name, name.capitalize(), "", "", n)
         )

@@ -203,7 +203,7 @@ class PIANA_OT_OpenUModel(bpy.types.Operator):
         addon_path = Path(bpy.utils.user_resource('SCRIPTS')
                           ).joinpath('addons', __package__)
         umodel_path = addon_path.joinpath(
-            "tools", "umodel_scaling.exe").__str__()
+            "tools", "umodel.exe").__str__()
 
         subprocess.Popen(
             [umodel_path,
