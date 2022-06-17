@@ -572,9 +572,6 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
         set_node_position(N_MAPPING, -1600, 0)
     
     elif mat_type == "NO PARENT":
-        if "M_Pitt_Lamps_Glow" in mat.name:
-            N_SHADER.node_tree = get_valorant_shader(group_name="VALORANT_SpriteGlow")
-            link(N_SHADER.outputs["BSDF"], N_OUTPUT.inputs["Surface"])
         if "Sky" not in mat.name:
             N_SHADER.node_tree = get_valorant_shader(group_name="VALORANT_Base")
             link(N_SHADER.outputs["BSDF"], N_OUTPUT.inputs["Surface"])
@@ -681,6 +678,7 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
                             link(N_VERTEX.outputs["Alpha"], N_SHADER.inputs["Vertex Alpha"])
                         if "Use Vertex Alpha" in N_SHADER.inputs:
                             N_SHADER.inputs["Use Vertex Alpha"].default_value = 1
+                            N_SHADER.inputs["Use Alpha Power"].default_value = 0
 
                 if "use alpha as emissive" in param_name:
                     mat_switches.append("use alpha as emissive")
@@ -778,10 +776,6 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
                 if "Diffuse Color" in N_SHADER.inputs:
                     N_SHADER.inputs["Diffuse Color"].default_value = get_rgb(param_value)
 
-            if "color mult" in param_name:
-                if "Tint" in N_SHADER.inputs:
-                    N_SHADER.inputs["Tint"].default_value = get_rgb(param_value)
-
             if "ao color" in param_name:
                 if "AO Color" in N_SHADER.inputs:
                     N_SHADER.inputs["AO Color"].default_value = get_rgb(param_value)
@@ -810,10 +804,10 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
             if "line color" in param_name:
                 if "line color" in N_SHADER.inputs:
                     N_SHADER.inputs["line color"].default_value = get_rgb(param_value)
-            if "layer a tint" in param_name:
+            if "layer a tint" in param_name or "color mult" in param_name or "texture tint a" in param_name:
                 if "Tint" in N_SHADER.inputs:
                     N_SHADER.inputs["Tint"].default_value = get_rgb(param_value)
-            if "layer b tint" in param_name:
+            if "layer b tint" in param_name or "texture tint b" in param_name:
                 if "Tint B" in N_SHADER.inputs:
                     N_SHADER.inputs["Tint B"].default_value = get_rgb(param_value)
             VectorParameterValues.append(param['ParameterInfo']['Name'].lower())
@@ -875,7 +869,7 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
                 #     if "Alpha" in N_SHADER.inputs and user_mat_type != "Glass":
                 #         link(node_tex.outputs["Alpha"], N_SHADER.inputs["Alpha"])
 
-        if key == "diffuse b" or key == "texture b":
+        if key == "diffuse b" or key == "texture b"  or key == "albedo b":
             if "DF B" in N_SHADER.inputs and "DF B Alpha" in N_SHADER.inputs:
                 link(node_tex.outputs["Color"], N_SHADER.inputs["DF B"])
                 link(node_tex.outputs["Alpha"], N_SHADER.inputs["DF B Alpha"])
@@ -974,6 +968,9 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
         N_SHADER.inputs["Only Glow"].default_value = 1
         N_SHADER.inputs["Emission Strength"].default_value = 15
 
+    if "Paint_M0_AsphaltStreetC" in mat.name:
+        N_SHADER.inputs["Vertex Alpha Srgb/Linear"].default_value = 0
+
     if "Sand_" in mat.name or "SandBlend" in mat.name:
         if "Sand_Blend" in N_SHADER.inputs:
             N_SHADER.inputs["Sand_Blend"].default_value = 1
@@ -1039,7 +1036,7 @@ def get_textures(settings: Settings, mat: bpy.types.Material, override: bool, ma
                     tex_image_node.location[0] = pos[0]
                     tex_image_node.location[1] = pos[1]
 
-                    if "diffuse" == param_name or "diffuse a" == param_name or "albedo" == param_name or "texture a" == param_name:
+                    if "diffuse" == param_name or "diffuse a" == param_name or "albedo" == param_name or "texture a" == param_name or "albedo a" == param_name:
                         nodes_texture["diffuse"] = tex_image_node
                     if "mra" == param_name or "mra a" == param_name:
                         tex_image_node.image.colorspace_settings.name = "Non-Color"
