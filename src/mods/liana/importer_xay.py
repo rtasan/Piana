@@ -1,5 +1,6 @@
 import bpy
 import struct
+from bpy_extras.io_utils import unpack_list
 #import numpy as np # !TODO: #3 switch to numpy from struct
 
 unpack_uint8 = struct.Struct('<B').unpack
@@ -11,6 +12,15 @@ unpack_2uint32 = struct.Struct('<2I').unpack
 unpack_3uint32 = struct.Struct('<3I').unpack
 unpack_header1 = struct.Struct('<B?H').unpack
 unpack_magicver = struct.Struct('<IB').unpack
+
+if bpy.app.version[1] <= 1:
+    def vcol_setup(mesh, vertex_colors):
+        color_layer = mesh.vertex_colors.new(name = "Col", do_init = False)
+        color_layer.data.foreach_set('color', unpack_list([(color_linear_to_srgb(vertex_colors[l.vertex_index][0]/255), color_linear_to_srgb(vertex_colors[l.vertex_index][1]/255), color_linear_to_srgb(vertex_colors[l.vertex_index][2]/255), (vertex_colors[l.vertex_index][3]/255) )for l in mesh.loops]))
+elif bpy.app.version[1] >= 2:
+    def vcol_setup(mesh, vertex_colors):
+        color_layer = mesh.color_attributes.new(name = "Col", type='BYTE_COLOR', domain='CORNER')
+        color_layer.data.foreach_set('color', [c for e in [vertex_colors[l.vertex_index] for l in mesh.loops] for c in e])
 
 
 def color_linear_to_srgb(c: float) -> float:
@@ -77,10 +87,7 @@ def xay(xay_path: str) -> bool:
         if has_vcols:
             for vert in range(vertex_count):
                 r, g, b, a = unpack_4uint8(f.read(4))
-                vertex_colors.append((color_linear_to_srgb(r / 255),
-                                      color_linear_to_srgb(g / 255),
-                                      color_linear_to_srgb(b / 255),
-                                      a / 255))
+                vertex_colors.append((r,g,b,a))
         
         
         # filename from path without extension
@@ -110,9 +117,7 @@ def xay(xay_path: str) -> bool:
         
         # setting vertex colors
         if has_vcols:
-            color_layer = mesh.vertex_colors.new(name = "Col", do_init = False)
-            color_layer.data.foreach_set('color', [c for e in [vertex_colors[l.vertex_index] for l in mesh.loops] for c in e])
-        
+            vcol_setup(mesh, vertex_colors)      
         
         mesh.validate()
         mesh.update()
