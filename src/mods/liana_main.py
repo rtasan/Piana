@@ -2,7 +2,7 @@ import sys
 import os
 import subprocess
 import bpy
-from bpy.types import Mesh
+from bpy.types import Mesh, ShaderNodeVertexColor
 
 from contextlib import redirect_stdout
 from sys import stdout
@@ -320,13 +320,6 @@ def set_materials(settings: Settings, byo: bpy.types.Object, map_object: MapObje
 
 # SECTION : Set Material
 
-if bpy.app.version[1] <= 1:
-    def get_vertex_node(nodes):
-        return nodes.get("Vertex Color")
-elif bpy.app.version[1] >= 2:
-    def get_vertex_node(nodes):
-        return nodes.get("Color Attribute")
-
 
 def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, override: bool = False, decal: bool = False, object_cls: MapObject = None, object_byo: bpy.types.Object = None):
 
@@ -372,10 +365,11 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
         bpy.data.objects.remove(object_byo)
 
     # if obj_data.vertex_colors:
-    N_VERTEX = get_vertex_node(nodes)
+    N_VERTEX: ShaderNodeVertexColor = nodes.get("Vertex Color")
     if N_VERTEX is None:
-        N_VERTEX = nodes.new(type='ShaderNodeVertexColor')
+        N_VERTEX = create_node(type="ShaderNodeVertexColor")
         N_VERTEX.layer_name = "Col"
+        N_VERTEX.name = "Vertex Color"
 
     note_textures_normal = create_node_note(nodes, "Textures : Normal")
     note_textures_override = create_node_note(nodes, "Textures : Override")
