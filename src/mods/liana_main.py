@@ -272,7 +272,7 @@ def set_materials(settings: Settings, byo: bpy.types.Object, map_object: MapObje
                             obj_data = byo.data
                             mat_data = mat_json[0]
 
-                            if obj_data.vertex_colors:
+                            if getattr(obj_data, VCOL_ATTR_NAME):
                                 mat_name = mat_data["Name"] + "_V"
                             else:
                                 mat_name = mat_data["Name"] + "_NV"
@@ -299,7 +299,7 @@ def set_materials(settings: Settings, byo: bpy.types.Object, map_object: MapObje
                         obj_data = byo.data
                         mat_data = mat_json[0]
 
-                        if obj_data.vertex_colors:
+                        if getattr(obj_data, VCOL_ATTR_NAME):
                             mat_name = mat_data["Name"] + "_V"
                         else:
                             mat_name = mat_data["Name"] + "_NV"
@@ -671,7 +671,7 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
                         N_SHADER.inputs["Invert Alpha"].default_value = 1
 
                 if "use vertex color" in param_name:
-                    if obj_data.vertex_colors:
+                    if getattr(obj_data, VCOL_ATTR_NAME):
                         mat_switches.append(param_name)
                         if "Vertex Color" in N_SHADER.inputs:
                             link(N_VERTEX.outputs["Color"], N_SHADER.inputs["Vertex Color"])
@@ -679,7 +679,7 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
                             N_SHADER.inputs["Use Vertex Color"].default_value = 1
 
                 if "use vertex alpha" in param_name:
-                    if obj_data.vertex_colors:
+                    if getattr(obj_data, VCOL_ATTR_NAME):
                         mat_switches.append(param_name)
                         if "Vertex Alpha" in N_SHADER.inputs:
                             link(N_VERTEX.outputs["Alpha"], N_SHADER.inputs["Vertex Alpha"])
@@ -825,7 +825,7 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
     mat.blend_method = blend_mode.name
     mat.shadow_method = 'OPAQUE' if blend_mode.name == 'OPAQUE' else 'HASHED'
 
-    if obj_data.vertex_colors:
+    if getattr(obj_data, VCOL_ATTR_NAME):
         # mat_switches.append(param_name)
         # if "Use Vertex Color" in N_SHADER.inputs:
         #     link(N_VERTEX.outputs["Color"], N_SHADER.inputs["Vertex Color"])
