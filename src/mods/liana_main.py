@@ -2,6 +2,7 @@ import sys
 import os
 import subprocess
 import bpy
+from bpy.types import Mesh
 
 from contextlib import redirect_stdout
 from sys import stdout
@@ -1409,23 +1410,17 @@ def import_object(map_object: MapObject, target_collection: bpy.types.Collection
                 if "Data" in lod_data["OverrideVertexColors"]:
                     vertex_colors_hex = lod_data["OverrideVertexColors"]["Data"]
 
-                    mo = master_object.data
-                    #vertex_color_layer_name = "OverrideVertexColors"
+                    mo: Mesh = master_object.data
 
-                    if not mo.vertex_colors:
-                        mo.vertex_colors.new(name="Col", do_init=False)
+                    vertex_colors = [
+                        [
+                            x / 255
+                            for x in unpack_4uint8(bytes.fromhex(rgba_hex))
+                        ]
+                        for rgba_hex in vertex_colors_hex
+                    ]
 
-                    color_layer = mo.vertex_colors["Col"]  # !TODO: #2 use umap name instead and rework the way vertex colors are handled
-
-                    # this should be cleaned up a bit.. later..
-                    # unpack_4uint8 = unpack_4uint8
-                    for idx, loop in enumerate(mo.loops):
-                        vertex_color_hex = vertex_colors_hex[loop.vertex_index]
-                        r, g, b, a = unpack_4uint8(bytes.fromhex(vertex_color_hex))
-                        color_layer.data[idx].color = (color_linear_to_srgb(r / 255),
-                                                       color_linear_to_srgb(g / 255),
-                                                       color_linear_to_srgb(b / 255),
-                                                       a / 255)
+                    set_vcols_on_layer(mo, vertex_colors)
 
         # Let's goooooooo!
         if map_object.is_instanced():

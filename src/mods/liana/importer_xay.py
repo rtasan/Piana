@@ -27,7 +27,7 @@ def set_vcols_on_layer(
     mesh: Mesh,
     vertex_colors: List[Tuple[int, int, int, int]],
     color_layer_name: str = "Col",
-):
+) -> None:
     mesh_cols: Union[AttributeGroup, LoopColors]
     mesh_cols = getattr(mesh, VCOL_ATTR_NAME)
 
