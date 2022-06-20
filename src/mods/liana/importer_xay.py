@@ -153,7 +153,6 @@ def xay(xay_path: str) -> Optional[Object]:
 
         # setting vertex colors
         if has_vcols:
-            # vcol_setup(mesh, vertex_colors)
             set_vcols_on_layer(mesh, vertex_colors)
 
         mesh.validate()
