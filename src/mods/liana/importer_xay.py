@@ -140,11 +140,8 @@ def xay(xay_path: str) -> Optional[Object]:
 
         # appending mats to mesh
         for material in materials:
-            # mat = bpy.data.materials.new(material[0])
-            # mesh.materials.append(mat)
-
-            # create only material slots instead of assigning actual material data
-            mesh.materials.append(None)
+            mat = bpy.data.materials.new(material[0])
+            mesh.materials.append(mat)
 
         # setting mats
         for mat_idx in range(len(materials) - 1):
