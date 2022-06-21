@@ -2,6 +2,7 @@ import sys
 import os
 import subprocess
 import bpy
+from bpy.types import Mesh, ShaderNodeVertexColor
 
 from contextlib import redirect_stdout
 from sys import stdout
@@ -271,7 +272,7 @@ def set_materials(settings: Settings, byo: bpy.types.Object, map_object: MapObje
                             obj_data = byo.data
                             mat_data = mat_json[0]
 
-                            if obj_data.vertex_colors:
+                            if getattr(obj_data, VCOL_ATTR_NAME):
                                 mat_name = mat_data["Name"] + "_V"
                             else:
                                 mat_name = mat_data["Name"] + "_NV"
@@ -298,7 +299,7 @@ def set_materials(settings: Settings, byo: bpy.types.Object, map_object: MapObje
                         obj_data = byo.data
                         mat_data = mat_json[0]
 
-                        if obj_data.vertex_colors:
+                        if getattr(obj_data, VCOL_ATTR_NAME):
                             mat_name = mat_data["Name"] + "_V"
                         else:
                             mat_name = mat_data["Name"] + "_NV"
@@ -364,11 +365,11 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
         bpy.data.objects.remove(object_byo)
 
     # if obj_data.vertex_colors:
-    if "Vertex Color" in nodes:
-        N_VERTEX = nodes['Vertex Color']
-    else:
-        N_VERTEX = create_node(type='ShaderNodeVertexColor')
-        nodes["Vertex Color"].layer_name = "Col"
+    N_VERTEX: ShaderNodeVertexColor = nodes.get("Vertex Color")
+    if N_VERTEX is None:
+        N_VERTEX = create_node(type="ShaderNodeVertexColor")
+        N_VERTEX.layer_name = "Col"
+        N_VERTEX.name = "Vertex Color"
 
     note_textures_normal = create_node_note(nodes, "Textures : Normal")
     note_textures_override = create_node_note(nodes, "Textures : Override")
@@ -664,7 +665,7 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
                         N_SHADER.inputs["Invert Alpha"].default_value = 1
 
                 if "use vertex color" in param_name:
-                    if obj_data.vertex_colors:
+                    if getattr(obj_data, VCOL_ATTR_NAME):
                         mat_switches.append(param_name)
                         if "Vertex Color" in N_SHADER.inputs:
                             link(N_VERTEX.outputs["Color"], N_SHADER.inputs["Vertex Color"])
@@ -672,7 +673,7 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
                             N_SHADER.inputs["Use Vertex Color"].default_value = 1
 
                 if "use vertex alpha" in param_name:
-                    if obj_data.vertex_colors:
+                    if getattr(obj_data, VCOL_ATTR_NAME):
                         mat_switches.append(param_name)
                         if "Vertex Alpha" in N_SHADER.inputs:
                             link(N_VERTEX.outputs["Alpha"], N_SHADER.inputs["Vertex Alpha"])
@@ -818,7 +819,7 @@ def set_material(settings: Settings, mat: bpy.types.Material, mat_data: dict, ov
     mat.blend_method = blend_mode.name
     mat.shadow_method = 'OPAQUE' if blend_mode.name == 'OPAQUE' else 'HASHED'
 
-    if obj_data.vertex_colors:
+    if getattr(obj_data, VCOL_ATTR_NAME):
         # mat_switches.append(param_name)
         # if "Use Vertex Color" in N_SHADER.inputs:
         #     link(N_VERTEX.outputs["Color"], N_SHADER.inputs["Vertex Color"])
@@ -1403,23 +1404,17 @@ def import_object(map_object: MapObject, target_collection: bpy.types.Collection
                 if "Data" in lod_data["OverrideVertexColors"]:
                     vertex_colors_hex = lod_data["OverrideVertexColors"]["Data"]
 
-                    mo = master_object.data
-                    #vertex_color_layer_name = "OverrideVertexColors"
+                    mo: Mesh = master_object.data
 
-                    if not mo.vertex_colors:
-                        mo.vertex_colors.new(name="Col", do_init=False)
+                    vertex_colors = [
+                        [
+                            x / 255
+                            for x in unpack_4uint8(bytes.fromhex(rgba_hex))
+                        ]
+                        for rgba_hex in vertex_colors_hex
+                    ]
 
-                    color_layer = mo.vertex_colors["Col"]  # !TODO: #2 use umap name instead and rework the way vertex colors are handled
-
-                    # this should be cleaned up a bit.. later..
-                    # unpack_4uint8 = unpack_4uint8
-                    for idx, loop in enumerate(mo.loops):
-                        vertex_color_hex = vertex_colors_hex[loop.vertex_index]
-                        r, g, b, a = unpack_4uint8(bytes.fromhex(vertex_color_hex))
-                        color_layer.data[idx].color = (color_linear_to_srgb(r / 255),
-                                                       color_linear_to_srgb(g / 255),
-                                                       color_linear_to_srgb(b / 255),
-                                                       a / 255)
+                    set_vcols_on_layer(mo, vertex_colors)
 
         # Let's goooooooo!
         if map_object.is_instanced():
